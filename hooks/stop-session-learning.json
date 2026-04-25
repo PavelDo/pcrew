@@ -1,0 +1,14 @@
+{
+  "_comment": "Claude Code Stop hook — prompts the assistant to do a one-shot session-learning pass before stopping. Schema-valid for the Stop event (uses decision/reason, NOT hookSpecificOutput.additionalContext which the schema rejects on Stop). One-shot per session via /tmp sentinel keyed on $CLAUDE_SESSION_ID — without it, decision:block would re-fire on every Stop attempt and create a loop. Drop into ~/.claude/settings.json under the top-level \"hooks\" key.",
+  "Stop": [
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "SID=\"${CLAUDE_SESSION_ID:-unknown}\"; SENTINEL=\"/tmp/claude-stop-learning-${SID}\"; if [ \"$SID\" = \"unknown\" ] || [ -e \"$SENTINEL\" ]; then echo '{\"continue\": true}'; else touch \"$SENTINEL\"; printf '%s' '{\"decision\":\"block\",\"reason\":\"SESSION LEARNING CHECK: Before ending, review this session for actionable learnings. Save to memory any: (1) user corrections or preferences you should remember, (2) workflow patterns that worked or failed, (3) bug patterns or testing gaps discovered, (4) project context that would help future sessions. Skip if the session was trivial or no new learnings emerged. Be selective -- only save what will genuinely help next time.\"}'; fi",
+          "timeout": 5
+        }
+      ]
+    }
+  ]
+}
